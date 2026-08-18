@@ -1,4 +1,5 @@
 import streamlit as st
+import base64
 from pathlib import Path
 
 from transcript import get_transcript
@@ -370,8 +371,22 @@ st.markdown(
 # VIDEO BACKGROUND
 # =========================================================
 
+# Locate the video inside the project's static folder
+video_path = (
+    Path(__file__).parent
+    / "static"
+    / "bg_video.mp4"
+)
+
+# Read the video file
+with open(video_path, "rb") as video_file:
+    video_base64 = base64.b64encode(
+        video_file.read()
+    ).decode()
+
+# Display the background video
 st.html(
-    """
+    f"""
     <div class="video-background">
 
         <video
@@ -383,54 +398,15 @@ st.html(
             preload="auto"
             disablepictureinpicture
         >
-
             <source
-                src="/app/static/bg_video.mp4"
+                src="data:video/mp4;base64,{video_base64}"
                 type="video/mp4"
             >
-
         </video>
 
     </div>
 
     <div class="video-overlay"></div>
-
-    <script>
-
-        const video =
-            document.getElementById("backgroundVideo");
-
-        video.muted = true;
-        video.volume = 0;
-
-        function startBackgroundVideo() {
-
-            video.play().catch(function(error) {
-
-                console.log(
-                    "Autoplay waiting:",
-                    error
-                );
-
-            });
-
-        }
-
-        video.addEventListener(
-            "loadeddata",
-            startBackgroundVideo,
-            { once: true }
-        );
-
-        video.addEventListener(
-            "canplay",
-            startBackgroundVideo,
-            { once: true }
-        );
-
-        startBackgroundVideo();
-
-    </script>
     """
 )
 
