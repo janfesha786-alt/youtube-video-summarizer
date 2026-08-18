@@ -372,41 +372,36 @@ st.markdown(
 # =========================================================
 
 # Locate the video inside the project's static folder
-
 video_path = (
     Path(__file__).parent
     / "static"
     / "bg_video.mp4"
 )
 
-
 # Read the video file
-
 with open(video_path, "rb") as video_file:
-
     video_base64 = base64.b64encode(
         video_file.read()
     ).decode()
 
-
 # Display the background video
-
 st.html(
     f"""
     <div class="video-background">
 
         <video
+            id="backgroundVideo"
             autoplay
             muted
             playsinline
             loop
+            preload="auto"
+            disablepictureinpicture
         >
-
             <source
                 src="data:video/mp4;base64,{video_base64}"
                 type="video/mp4"
             >
-
         </video>
 
     </div>
