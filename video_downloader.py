@@ -123,8 +123,7 @@ def get_video_formats(youtube_url):
             "GenDownload returned an invalid JSON response."
         )
 
-
-    # -----------------------------------------------------
+    
     # CHECK API ERROR
     # -----------------------------------------------------
 
