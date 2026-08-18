@@ -216,7 +216,6 @@ st.markdown(
        ===================================================== */
 
     [data-testid="stVerticalBlockBorderWrapper"] {
-
         background: rgba(255,255,255,0.12) !important;
 
         backdrop-filter: blur(8px);
@@ -256,7 +255,6 @@ st.markdown(
        ===================================================== */
 
     [data-baseweb="select"] > div {
-
         background-color: rgba(255,255,255,0.92) !important;
 
         color: #111827 !important;
@@ -270,7 +268,6 @@ st.markdown(
        ===================================================== */
 
     .stButton > button {
-
         background-color: #ff0000 !important;
 
         color: white !important;
@@ -286,7 +283,6 @@ st.markdown(
 
 
     .stButton > button:hover {
-
         background-color: #cc0000 !important;
 
         color: white !important;
@@ -298,7 +294,6 @@ st.markdown(
        ===================================================== */
 
     .stDownloadButton > button {
-
         background-color: #ff0000 !important;
 
         color: white !important;
@@ -316,7 +311,6 @@ st.markdown(
 
 
     .stDownloadButton > button:hover {
-
         background-color: #cc0000 !important;
 
         color: white !important;
@@ -325,13 +319,11 @@ st.markdown(
 
     .stDownloadButton > button p,
     .stDownloadButton > button span {
-
         color: white !important;
     }
 
 
     .stDownloadButton > button * {
-
         color: white !important;
     }
 
@@ -343,7 +335,6 @@ st.markdown(
     .stMarkdown,
     .stCaption,
     p {
-
         color: white;
     }
 
@@ -353,7 +344,6 @@ st.markdown(
        ===================================================== */
 
     [data-testid="stExpander"] {
-
         background: rgba(255,255,255,0.10) !important;
 
         border: 1px solid rgba(255,255,255,0.25) !important;
@@ -367,9 +357,9 @@ st.markdown(
        ===================================================== */
 
     hr {
-
         border-color: rgba(255,255,255,0.35) !important;
     }
+
 
     </style>
     """,
@@ -381,7 +371,16 @@ st.markdown(
 # VIDEO BACKGROUND
 # =========================================================
 
-video_path = Path(__file__).parent / "static" / "bg_video.mp4"
+# Locate the video inside the project's static folder
+
+video_path = (
+    Path(__file__).parent
+    / "static"
+    / "bg_video.mp4"
+)
+
+
+# Read the video file
 
 with open(video_path, "rb") as video_file:
 
@@ -389,6 +388,8 @@ with open(video_path, "rb") as video_file:
         video_file.read()
     ).decode()
 
+
+# Display the background video
 
 st.html(
     f"""
@@ -419,7 +420,9 @@ st.html(
 # LOGO
 # =========================================================
 
-col1, col2, col3 = st.columns([1, 1, 1])
+col1, col2, col3 = st.columns(
+    [1, 1, 1]
+)
 
 with col2:
 
@@ -499,7 +502,10 @@ with st.container(border=True):
 # GENERATE BUTTON
 # =========================================================
 
-left, center, right = st.columns([1, 2, 1])
+left, center, right = st.columns(
+    [1, 2, 1]
+)
+
 
 with center:
 
@@ -580,9 +586,7 @@ if generate:
             )
 
 
-            st.write(
-                summary
-            )
+            st.write(summary)
 
 
             st.markdown(
@@ -613,9 +617,7 @@ if generate:
                 "📜 View Transcript"
             ):
 
-                st.write(
-                    transcript
-                )
+                st.write(transcript)
 
 
             # =================================================
@@ -698,7 +700,7 @@ if generate:
 
 
                 # -------------------------------------------------
-                # CHECK RESPONSE
+                # EXTRACT ALL VIDEO FORMATS
                 # -------------------------------------------------
 
                 formats = video_data.get(
@@ -707,7 +709,19 @@ if generate:
                 )
 
 
-                if not formats:
+                # -------------------------------------------------
+                # KEEP ONLY VIDEO FORMATS
+                # -------------------------------------------------
+
+                video_formats = [
+                    fmt
+                    for fmt in formats
+                    if fmt.get("type") == "video"
+                    and fmt.get("url")
+                ]
+
+
+                if not video_formats:
 
                     st.warning(
                         "No downloadable video qualities were found."
@@ -717,273 +731,254 @@ if generate:
                 else:
 
                     # =================================================
+                    # SORT VIDEO QUALITIES
+                    # =================================================
+
+                    def get_quality_number(fmt):
+
+                        label = str(
+                            fmt.get(
+                                "label",
+                                "0"
+                            )
+                        )
+
+
+                        try:
+
+                            return int(
+                                label.replace(
+                                    "p",
+                                    ""
+                                )
+                            )
+
+                        except ValueError:
+
+                            return 0
+
+
+                    video_formats.sort(
+                        key=get_quality_number,
+                        reverse=True
+                    )
+
+
+                    # =================================================
                     # CREATE QUALITY OPTIONS
                     # =================================================
 
                     quality_options = []
 
 
-                    for fmt in formats:
+                    for fmt in video_formats:
 
-                        # -----------------------------------------
-                        # GET QUALITY LABEL
-                        # -----------------------------------------
+                        # GenDownload uses "label"
+                        # such as "2160p", "1440p", "1080p"
 
-                        label = fmt.get(
+                        quality = fmt.get(
                             "label",
-                            None
+                            "Unknown quality"
                         )
 
-
-                        # -----------------------------------------
-                        # FALLBACK QUALITY
-                        # -----------------------------------------
-
-                        if not label:
-
-                            height = fmt.get(
-                                "height"
-                            )
-
-
-                            if height:
-
-                                label = f"{height}p"
-
-
-                            else:
-
-                                resolution = fmt.get(
-                                    "resolution"
-                                )
-
-
-                                if resolution:
-
-                                    label = str(
-                                        resolution
-                                    )
-
-                                else:
-
-                                    label = "Unknown quality"
-
-
-                        # -----------------------------------------
-                        # GET FILE SIZE
-                        # -----------------------------------------
 
                         filesize = fmt.get(
                             "filesize"
                         )
 
 
-                        # -----------------------------------------
-                        # CONVERT FILE SIZE TO MB
-                        # -----------------------------------------
+                        # -------------------------------------------------
+                        # CALCULATE FILE SIZE
+                        # -------------------------------------------------
 
                         if filesize:
 
-                            try:
-
-                                size_mb = (
-                                    float(filesize)
-                                    /
-                                    (1024 * 1024)
-                                )
-
-
-                                label = (
-                                    f"{label} "
-                                    f"({size_mb:.1f} MB)"
-                                )
-
-                            except (
-                                TypeError,
-                                ValueError
-                            ):
-
-                                pass
-
-
-                        # -----------------------------------------
-                        # GET FORMAT ID
-                        # -----------------------------------------
-
-                        format_id = fmt.get(
-                            "format_id",
-                            fmt.get(
-                                "id",
-                                ""
+                            size_mb = (
+                                filesize
+                                / (1024 * 1024)
                             )
-                        )
 
 
-                        # -----------------------------------------
-                        # ADD OPTION
-                        # -----------------------------------------
+                            display_label = (
+                                f"{quality} "
+                                f"({size_mb:.1f} MB)"
+                            )
+
+                        else:
+
+                            display_label = str(
+                                quality
+                            )
+
+
+                        # -------------------------------------------------
+                        # STORE LABEL + COMPLETE FORMAT
+                        # -------------------------------------------------
 
                         quality_options.append(
                             (
-                                label,
+                                display_label,
                                 fmt
                             )
                         )
 
 
                     # =================================================
-                    # REMOVE DUPLICATES
+                    # QUALITY SELECTOR
                     # =================================================
 
-                    unique_options = []
+                    selected_label = st.selectbox(
+                        "Choose video quality",
+                        [
+                            item[0]
+                            for item in quality_options
+                        ],
+                        key="video_quality"
+                    )
 
-                    seen = set()
+
+                    # =================================================
+                    # FIND SELECTED FORMAT
+                    # =================================================
+
+                    selected_format = None
 
 
                     for label, fmt in quality_options:
 
-                        format_id = fmt.get(
-                            "format_id",
-                            fmt.get(
-                                "id",
-                                ""
+                        if label == selected_label:
+
+                            selected_format = fmt
+
+                            break
+
+
+                    # =================================================
+                    # PREPARE DOWNLOAD
+                    # =================================================
+
+                    prepare_video = st.button(
+                        "⬇️ Prepare Video Download",
+                        use_container_width=True,
+                        key="prepare_video"
+                    )
+
+
+                    if prepare_video:
+
+                        if selected_format is None:
+
+                            st.error(
+                                "Invalid video quality selected."
                             )
-                        )
 
+                        else:
 
-                        if format_id not in seen:
+                            try:
 
-                            unique_options.append(
-                                (
-                                    label,
-                                    fmt
+                                # -------------------------------------------------
+                                # GET DOWNLOAD URL
+                                # -------------------------------------------------
+
+                                video_url = selected_format.get(
+                                    "url"
                                 )
-                            )
-
-                            seen.add(
-                                format_id
-                            )
 
 
-                    # =================================================
-                    # QUALITY SELECTOR
-                    # =================================================
+                                if not video_url:
 
-                    if unique_options:
-
-                        selected_label = st.selectbox(
-                            "Choose video quality",
-
-                            [
-                                item[0]
-                                for item in unique_options
-                            ],
-
-                            key="video_quality"
-                        )
+                                    raise Exception(
+                                        "No download URL was returned "
+                                        "for this quality."
+                                    )
 
 
-                        # =================================================
-                        # GET SELECTED FORMAT
-                        # =================================================
+                                # -------------------------------------------------
+                                # GET QUALITY
+                                # -------------------------------------------------
 
-                        selected_format = next(
-                            item[1]
-                            for item in unique_options
-                            if item[0] == selected_label
-                        )
-
-
-                        # =================================================
-                        # PREPARE DOWNLOAD
-                        # =================================================
-
-                        prepare_video = st.button(
-                            "⬇️ Prepare Video Download",
-
-                            use_container_width=True,
-
-                            key="prepare_video"
-                        )
+                                selected_quality = selected_format.get(
+                                    "label",
+                                    "video"
+                                )
 
 
-                        if prepare_video:
+                                # -------------------------------------------------
+                                # DOWNLOAD VIDEO
+                                # -------------------------------------------------
 
-                            # -----------------------------------------
-                            # GET DOWNLOAD URL
-                            # -----------------------------------------
+                                with st.spinner(
+                                    f"Preparing {selected_quality} video..."
+                                ):
 
-                            video_url = selected_format.get(
-                                "url"
-                            )
+                                    video_bytes = download_video(
+                                        video_url
+                                    )
 
 
-                            if not video_url:
+                                st.success(
+                                    "Video prepared successfully!"
+                                )
+
+
+                                # =================================================
+                                # SAFE FILE NAME
+                                # =================================================
+
+                                video_title = video_data.get(
+                                    "title",
+                                    "YouTube Video"
+                                )
+
+
+                                safe_title = "".join(
+                                    c
+                                    for c in video_title
+                                    if c.isalnum()
+                                    or c in " -_"
+                                ).strip()
+
+
+                                if not safe_title:
+
+                                    safe_title = (
+                                        "youtube_video"
+                                    )
+
+
+                                file_name = (
+                                    f"{safe_title}_"
+                                    f"{selected_quality}.mp4"
+                                )
+
+
+                                # =================================================
+                                # DOWNLOAD BUTTON
+                                # =================================================
+
+                                st.download_button(
+                                    label="⬇️ Download Video",
+                                    data=video_bytes,
+                                    file_name=file_name,
+                                    mime="video/mp4",
+                                    use_container_width=True,
+                                    key="download_video"
+                                )
+
+
+                            except Exception as video_error:
 
                                 st.error(
-                                    "No download URL was returned for this quality."
+                                    f"Video preparation error: "
+                                    f"{video_error}"
                                 )
-
-
-                            else:
-
-                                try:
-
-                                    # -------------------------------------
-                                    # DOWNLOAD VIDEO
-                                    # -------------------------------------
-
-                                    with st.spinner(
-                                        "Preparing video..."
-                                    ):
-
-                                        video_bytes = download_video(
-                                            video_url
-                                        )
-
-
-                                    st.success(
-                                        "Video prepared successfully!"
-                                    )
-
-
-                                    # -------------------------------------
-                                    # DOWNLOAD BUTTON
-                                    # -------------------------------------
-
-                                    st.download_button(
-                                        label="⬇️ Download Video",
-
-                                        data=video_bytes,
-
-                                        file_name="youtube_video.mp4",
-
-                                        mime="video/mp4",
-
-                                        use_container_width=True,
-
-                                        key="download_video"
-                                    )
-
-
-                                except Exception as video_error:
-
-                                    st.error(
-                                        f"Video preparation error: {video_error}"
-                                    )
-
-
-                    else:
-
-                        st.warning(
-                            "No video qualities are available."
-                        )
 
 
             except Exception as format_error:
 
                 st.error(
-                    f"Could not retrieve video qualities: {format_error}"
+                    f"Could not retrieve video qualities: "
+                    f"{format_error}"
                 )
 
 
